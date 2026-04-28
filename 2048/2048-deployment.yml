@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: 2048-game-deployment
+  namespace: snake-game
+  labels:
+    app: 2048-game
 spec:
   replicas: 2
   selector:
