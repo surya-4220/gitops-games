@@ -15,11 +15,6 @@ jobs:
     name: Deploy Snake Game
     runs-on: ubuntu-latest
     # Only run if Snakegame manifests or argocd app definition changed
-    if: |
-      contains(join(github.event.commits.*.modified, ','), 'Snakegame/') ||
-      contains(join(github.event.commits.*.modified, ','), 'apps/argocd-snake.yaml') ||
-      contains(join(github.event.commits.*.added, ','), 'Snakegame/') ||
-      contains(join(github.event.commits.*.added, ','), 'apps/argocd-snake.yaml')
 
     steps:
     - name: Checkout code
