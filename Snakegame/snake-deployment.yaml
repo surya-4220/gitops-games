@@ -19,6 +19,4 @@ spec:
       - name: snake-game
         image: miplit/dinogame:latest
         ports:
-        - containerPort: 81
- 
- 
+        - containerPort: 80
