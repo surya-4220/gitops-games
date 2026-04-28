@@ -1,0 +1,73 @@
+
+name: Deploy Games via ArgoCD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  deploy-2048:
+    name: Deploy 2048 Game
+    runs-on: ubuntu-latest
+    # Only run if 2048 manifests or argocd app definition changed
+    if: |
+      contains(join(github.event.commits.*.modified, ','), '2048/') ||
+      contains(join(github.event.commits.*.modified, ','), 'apps/argocd-2048.yaml') ||
+      contains(join(github.event.commits.*.added, ','), '2048/') ||
+      contains(join(github.event.commits.*.added, ','), 'apps/argocd-2048.yaml')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
+
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig \
+          --region ap-south-1 \
+          --name argocd
+
+    - name: Create ArgoCD Application for 2048
+      run: |
+        kubectl apply -f apps/argocd-2048.yaml
+
+    - name: Wait for 2048 to sync
+      run: |
+        echo "Waiting for ArgoCD to sync 2048..."
+        timeout 120 bash -c '
+          until kubectl get application game-2048 -n argocd \
+            -o jsonpath="{.status.sync.status}" 2>/dev/null | grep -q "Synced"; do
+            echo "Still syncing..."
+            sleep 10
+          done
+        '
+        echo "✅ 2048 synced successfully!"
+
+    - name: Check 2048 health
+      run: |
+        timeout 120 bash -c '
+          until kubectl get application game-2048 -n argocd \
+            -o jsonpath="{.status.health.status}" 2>/dev/null | grep -q "Healthy"; do
+            echo "Waiting for healthy status..."
+            sleep 10
+          done
+        '
+        echo "✅ 2048 is Healthy!"
+
+    - name: Print 2048 URL
+      run: |
+        echo "Waiting for LoadBalancer IP..."
+        sleep 30
+        kubectl get svc -n game-2048
+        echo ""
+        echo "🎮 2048 Game URL:"
+        kubectl get svc game-2048-svc -n game-2048 \
+          -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" && echo

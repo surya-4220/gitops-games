@@ -1,0 +1,76 @@
+# ============================================================
+# .github/workflows/deploy.yml
+# CI/CD Pipeline — Creates ArgoCD Applications on push
+# ============================================================
+
+name: Deploy Games via ArgoCD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-snake-game:
+    name: Deploy Snake Game
+    runs-on: ubuntu-latest
+    # Only run if Snakegame manifests or argocd app definition changed
+    if: |
+      contains(join(github.event.commits.*.modified, ','), 'Snakegame/') ||
+      contains(join(github.event.commits.*.modified, ','), 'apps/argocd-snake.yaml') ||
+      contains(join(github.event.commits.*.added, ','), 'Snakegame/') ||
+      contains(join(github.event.commits.*.added, ','), 'apps/argocd-snake.yaml')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
+
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig \
+          --region ap-south-1 \
+          --name argocd
+
+    - name: Create ArgoCD Application for Snake Game
+      run: |
+        kubectl apply -f apps/argocd-snake.yaml
+
+    - name: Wait for Snake Game to sync
+      run: |
+        echo "Waiting for ArgoCD to sync snake-game..."
+        timeout 120 bash -c '
+          until kubectl get application snake-game -n argocd \
+            -o jsonpath="{.status.sync.status}" 2>/dev/null | grep -q "Synced"; do
+            echo "Still syncing..."
+            sleep 10
+          done
+        '
+        echo "✅ Snake Game synced successfully!"
+
+    - name: Check Snake Game health
+      run: |
+        timeout 120 bash -c '
+          until kubectl get application snake-game -n argocd \
+            -o jsonpath="{.status.health.status}" 2>/dev/null | grep -q "Healthy"; do
+            echo "Waiting for healthy status..."
+            sleep 10
+          done
+        '
+        echo "✅ Snake Game is Healthy!"
+
+    - name: Print Snake Game URL
+      run: |
+        echo "Waiting for LoadBalancer IP..."
+        sleep 30
+        kubectl get svc -n snake-game
+        echo ""
+        echo "🎮 Snake Game URL:"
+        kubectl get svc snake-game-svc -n snake-game \
+          -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" && echo
