@@ -1,17 +1,16 @@
-name: Deploy 2048 Game
+name: Deploy Ingress
 
 on:
   push:
     branches:
       - main
     paths:
-      - '2048/**'
-      - 'apps/argocd-2048.yaml'
       - 'ingress/**'
+      - 'apps/argocd-ingress.yaml'
 
 jobs:
-  deploy-2048-game:
-    name: Deploy 2048 Game
+  deploy-ingress:
+    name: Deploy Games Ingress
     runs-on: ubuntu-latest
 
     steps:
@@ -31,31 +30,26 @@ jobs:
           --region ap-south-1 \
           --name agrocd
 
-    - name: Apply ArgoCD Applications
+    - name: Apply Ingress ArgoCD App
       run: |
-        kubectl apply -f apps/argocd-2048.yaml
+        kubectl apply -f apps/argocd-ingress.yaml
 
     - name: Wait for sync
       run: |
-        echo "Waiting for ArgoCD to sync..."
         timeout 120 bash -c '
-          until kubectl get application game-2048 -n argocd \
+          until kubectl get application games-ingress -n argocd \
             -o jsonpath="{.status.sync.status}" 2>/dev/null | grep -q "Synced"; do
             echo "Still syncing..."
             sleep 10
           done
         '
-        echo "✅ Synced!"
-
-    - name: Wait for pods
-      run: |
-        kubectl wait --for=condition=Ready pods \
-          --all -n games \
-          --timeout=120s
+        echo "✅ Ingress synced!"
 
     - name: Print ALB URL
       run: |
         sleep 30
         ALB=$(kubectl get ingress games-ingress -n games \
           -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
-        echo "🎮 2048 Game : http://$ALB/2048"
+        echo "ALB URL: http://$ALB"
+        echo "🦕 Dino : http://$ALB/snakegame"
+        echo "🎮 2048  : http://$ALB/2048"

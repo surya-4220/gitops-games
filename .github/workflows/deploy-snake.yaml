@@ -1,9 +1,4 @@
-# ============================================================
-# .github/workflows/deploy.yml
-# CI/CD Pipeline — Creates ArgoCD Applications on push
-# ============================================================
-
-name: Deploy Games via ArgoCD
+name: Deploy Snake Game
 
 on:
   push:
@@ -12,11 +7,12 @@ on:
     paths:
       - 'Snakegame/**'
       - 'apps/argocd-snake.yaml'
+      - 'ingress/**'
+
 jobs:
   deploy-snake-game:
     name: Deploy Snake Game
     runs-on: ubuntu-latest
-    # Only run if Snakegame manifests or argocd app definition changed
 
     steps:
     - name: Checkout code
@@ -35,13 +31,14 @@ jobs:
           --region ap-south-1 \
           --name agrocd
 
-    - name: Create ArgoCD Application for Snake Game
+    - name: Apply ArgoCD Applications
       run: |
         kubectl apply -f apps/argocd-snake.yaml
+        kubectl apply -f apps/argocd-2048.yaml
 
-    - name: Wait for Snake Game to sync
+    - name: Wait for sync
       run: |
-        echo "Waiting for ArgoCD to sync snake-game..."
+        echo "Waiting for ArgoCD to sync..."
         timeout 120 bash -c '
           until kubectl get application snake-game -n argocd \
             -o jsonpath="{.status.sync.status}" 2>/dev/null | grep -q "Synced"; do
@@ -49,25 +46,24 @@ jobs:
             sleep 10
           done
         '
-        echo "✅ Snake Game synced successfully!"
+        echo "✅ Synced!"
 
-    - name: Check Snake Game health
+    - name: Wait for pods
       run: |
-        timeout 120 bash -c '
-          until kubectl get application snake-game -n argocd \
-            -o jsonpath="{.status.health.status}" 2>/dev/null | grep -q "Healthy"; do
-            echo "Waiting for healthy status..."
-            sleep 10
-          done
-        '
-        echo "✅ Snake Game is Healthy!"
+        echo "Waiting for pods in games namespace..."
+        kubectl wait --for=condition=Ready pods \
+          --all -n games \
+          --timeout=120s
 
-    - name: Print Snake Game URL
+    - name: Print ALB URL
       run: |
-        echo "Waiting for LoadBalancer IP..."
+        echo "Waiting for ALB..."
         sleep 30
-        kubectl get svc -n snake-game
-        echo ""
-        echo "🎮 Snake Game URL:"
-        kubectl get svc snake-game-svc -n snake-game \
+        echo "🎮 Games ALB URL:"
+        kubectl get ingress games-ingress -n games \
           -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" && echo
+        echo ""
+        echo "Access games at:"
+        ALB=$(kubectl get ingress games-ingress -n games \
+          -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
+        echo "🦕 Dino Game : http://$ALB/snakegame"
