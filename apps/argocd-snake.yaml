@@ -7,9 +7,9 @@ spec:
   project: default
 #__________GitHub Details_________#
   source:
-    repoURL: https://github.com/surya-4220/Agro-CD
+    repoURL: https://github.com/surya-4220/gitops-games.git
     targetRevision: main
-    path: Snakegame/    #path of my code
+    path: Snakegame    #path of my code
  # ── Destination — your EKS cluster ────────────────────────
   destination:
     server: https://kubernetes.default.svc # In-cluster (ArgoCD is on same cluster)
