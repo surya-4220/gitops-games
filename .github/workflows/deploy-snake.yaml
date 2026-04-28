@@ -10,8 +10,8 @@ on:
     branches:
       - main
     paths:
-      - '2048/**'
-      - 'apps/argocd-2048.yaml'
+      - 'Snakegame/**'
+      - 'apps/argocd-snake.yaml'
 jobs:
   deploy-snake-game:
     name: Deploy Snake Game
