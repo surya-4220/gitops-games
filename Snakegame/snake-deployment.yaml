@@ -20,3 +20,4 @@ spec:
         image: miplit/dinogame:latest
         ports:
         - containerPort: 81
+ 

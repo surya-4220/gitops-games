@@ -20,3 +20,4 @@ spec:
         image: thipparthiavinash/2048-game
         ports:
         - containerPort: 80
+ 
