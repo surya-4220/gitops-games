@@ -9,7 +9,9 @@ on:
   push:
     branches:
       - main
-
+    paths:
+      - '2048/**'
+      - 'apps/argocd-2048.yaml'
 jobs:
   deploy-2048-game:
     name: Deploy 2048 Game

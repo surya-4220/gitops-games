@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: 2048-game-deployment
-  namespace: snake-game
+  namespace: 2048-game
   labels:
     app: 2048-game
 spec:
