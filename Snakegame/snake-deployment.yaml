@@ -17,9 +17,9 @@ spec:
     spec:
       containers:
       - name: snake-game
-        image: nginxdemos/hello:latest
+        image: miplit/dinogame:latest
         ports:
-        - containerPort: 80
+        - containerPort: 81
         resources:
           requests:
             cpu: "100m"
