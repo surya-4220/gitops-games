@@ -1,22 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: 2048-game
+  name: game-2048
   namespace: argocd
 spec:
   project: default
-#__________GitHub Details_________#
   source:
     repoURL: https://github.com/surya-4220/gitops-games.git
     targetRevision: main
-    path: "2048"
- # ── Destination — your EKS cluster ────────────────────────
+    path: 2048
   destination:
-    server: https://kubernetes.default.svc # In-cluster (ArgoCD is on same cluster)
-    namespace: 2048-game # Where my pods are running#
+    server: https://kubernetes.default.svc
+    namespace: games
   syncPolicy:
     automated:
-      prune: true        # delete resources removed from Git
-      selfHeal: true     # revert manual kubectl changes
+      prune: true
+      selfHeal: true
     syncOptions:
-      - CreateNamespace=true
+    - CreateNamespace=true

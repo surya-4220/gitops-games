@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: snake-game
+  name: game-2048
   namespace: games
   labels:
-    app: snake-game
+    app: game-2048
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: snake-game
+      app: game-2048
   template:
     metadata:
       labels:
-        app: snake-game
+        app: game-2048
     spec:
       containers:
-      - name: snake-game
-        image: miplit/dinogame:latest
+      - name: game-2048
+        image: thipparthiavinash/2048-game
         ports:
-        - containerPort: 81
+        - containerPort: 80

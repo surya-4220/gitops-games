@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: 2048-game-deployment
-  namespace: 2048-game
+  name: game-2048-deployment    # ← starts with letter
+  namespace: game-2048          # ← matches service namespace
   labels:
     app: 2048-game
 spec:
@@ -16,7 +16,7 @@ spec:
         app: 2048-game
     spec:
       containers:
-      - name: 2048-game
+      - name: game-2048
         image: thipparthiavinash/2048-game
         ports:
         - containerPort: 80
