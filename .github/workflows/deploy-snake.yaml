@@ -31,7 +31,7 @@ jobs:
       run: |
         aws eks update-kubeconfig \
           --region ap-south-1 \
-          --name argocd
+          --name agrocd
 
     - name: Create ArgoCD Application for Snake Game
       run: |
