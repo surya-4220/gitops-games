@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/surya-4220/gitops-games.git
     targetRevision: main
-    path: 2048
+    path: "2048"
   destination:
     server: https://kubernetes.default.svc
     namespace: games
