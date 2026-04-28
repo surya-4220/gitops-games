@@ -12,7 +12,7 @@ spec:
  # ── Destination — your EKS cluster ────────────────────────
   destination:
     server: https://kubernetes.default.svc # In-cluster (ArgoCD is on same cluster)
-    namespace: snake-game # Where my pods are running#
+    namespace: 2048-game # Where my pods are running#
   syncPolicy:
     automated:
       prune: true        # delete resources removed from Git
